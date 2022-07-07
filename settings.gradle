@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "GMaps Redirect"
-include ':app'
+include ':gmapsredirect'
