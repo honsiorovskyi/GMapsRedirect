@@ -18,7 +18,7 @@ import java.util.*
 
 const val LOG_NOTIFICATIONS_CHANNEL_ID = "default"
 
-class Response (val url: String, val status: Int, val redirect: String?, val body: String?) {}
+class Response (val url: String, val status: Int, val redirect: String?, val body: String?)
 
 class URLHandlerActivity : Activity() {
     private val job = SupervisorJob()
@@ -29,8 +29,8 @@ class URLHandlerActivity : Activity() {
             return null
         }
 
-        val xCoordinate = Regex("data=.*!3d(-?[0-9]{1,3}\\.[0-9]{1,10})")
-        val yCoordinate = Regex("data=.*!4d(-?[0-9]{1,3}\\.[0-9]{1,10})")
+        val xCoordinate = Regex("data=.*!3d(-?\\d{1,3}\\.\\d+)")
+        val yCoordinate = Regex("data=.*!4d(-?\\d{1,3}\\.\\d+)")
 
         val xMatch = xCoordinate.find(url)
         val yMatch = yCoordinate.find(url)
@@ -47,7 +47,7 @@ class URLHandlerActivity : Activity() {
             return null
         }
 
-        val coordinates = Regex("/maps/preview/place.*@(-?[0-9]{1,3}\\.[0-9]{1,10}),(-?[0-9]{1,3}\\.[0-9]{1,10})")
+        val coordinates = Regex("/maps/preview/place.*@(-?\\d{1,3}\\.\\d+),(-?\\d{1,3}\\.\\d+)")
         val match = coordinates.find(text) ?: return null
         val geo = "geo:${match.groupValues[1]},${match.groupValues[2]}?q=${match.groupValues[1]},${match.groupValues[2]}"
 
@@ -60,7 +60,7 @@ class URLHandlerActivity : Activity() {
 
         with(URL(url).openConnection() as HttpURLConnection) {
             instanceFollowRedirects = false
-            addRequestProperty("Cookie", "CONSENT=YES+FU.ck+V14+GL")
+            addRequestProperty("Cookie", "SOCS=CAESEwgDEgk1NjE2NDA4NTIaAmVuIAEaBgiA9smnBg")
             addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36")
 
             resp = Response(url, responseCode, getHeaderField("Location"), inputStream.bufferedReader().readText())
@@ -122,7 +122,8 @@ class URLHandlerActivity : Activity() {
                     openURL(geo)
                 }
 
-                log.logContext(ctx, url)
+                ctx.log("-> $url")
+                log.logContext(ctx)
             }
         } finally {
             finish()
@@ -135,6 +136,7 @@ class URLHandlerActivity : Activity() {
     }
 
 
+    @Suppress("SameParameterValue")
     private fun toast(text: String?) {
         runOnUiThread(fun() {
             Toast.makeText(applicationContext, text, Toast.LENGTH_SHORT).show()
@@ -160,7 +162,7 @@ class LogNotification(private val activity: Activity) {
         }
     }
 
-    fun logContext(ctx: LogContext, url: String) {
+    fun logContext(ctx: LogContext) {
         activity.runOnUiThread(fun() {
             val builder = NotificationCompat.Builder(activity, "default")
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -178,7 +180,7 @@ class LogNotification(private val activity: Activity) {
     }
 }
 
-class LogContext() {
+class LogContext {
     private var lines = Collections.synchronizedList(mutableListOf<String>())
     fun log(text: String?) {
         if (text.isNullOrBlank()) {
